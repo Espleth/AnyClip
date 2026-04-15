@@ -37,7 +37,7 @@ async function showToastInTab(tabId, text) {
   try {
     await chrome.tabs.sendMessage(tabId, { action: 'show-toast', text });
   } catch {
-    // Tab may not have content script (e.g. chrome:// pages)
+    // Content script not available (e.g. chrome:// pages)
   }
 }
 
@@ -75,7 +75,8 @@ async function pasteAndGo() {
   const text = (await readClipboard()).trim();
   if (!text) return;
 
-  const tab = await chrome.tabs.create({ url: textToUrl(text) });
+  const url = textToUrl(text);
+  const tab = await chrome.tabs.create({ url });
 
   // Show toast once the new tab has finished loading
   const onUpdated = (tabId, info) => {
@@ -95,11 +96,12 @@ chrome.commands.onCommand.addListener((command) => {
   }
 });
 
-// Handle messages forwarded from content script (fallback when Chrome command doesn't fire)
+// Handle messages from content script (fallback when Chrome command doesn't fire)
 chrome.runtime.onMessage.addListener((msg, sender) => {
-  if (msg.target === 'offscreen') return; // handled by offscreen.js
+  if (msg.target === 'offscreen') return;
   switch (msg.action) {
     case 'copy-url': copyUrl(); break;
     case 'copy-url-and-close': copyUrlAndClose(); break;
   }
 });
+

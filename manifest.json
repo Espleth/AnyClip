@@ -2,14 +2,16 @@
   "manifest_version": 3,
   "name": "AnyClip",
   "version": "1.0.0",
-  "description": "AnyClip — Chrome extension",
+  "description": "Copy, paste & go, or cut browser tab URLs with quick keyboard shortcuts.",
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting",
     "offscreen",
     "clipboardRead",
     "clipboardWrite"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "commands": {
     "copy-url": {
@@ -48,7 +50,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["http://*/*", "https://*/*"],
       "js": ["content.js"]
     }
   ],
