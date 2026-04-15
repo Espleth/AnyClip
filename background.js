@@ -78,14 +78,17 @@ async function pasteAndGo() {
   const url = textToUrl(text);
   const tab = await chrome.tabs.create({ url });
 
-  // Show toast once the new tab has finished loading
-  const onUpdated = (tabId, info) => {
-    if (tabId === tab.id && info.status === 'complete') {
-      chrome.tabs.onUpdated.removeListener(onUpdated);
-      showToastInTab(tabId, 'URL pasted');
+  // Retry showing toast until content script is ready
+  let attempts = 0;
+  const tryToast = setInterval(async () => {
+    attempts++;
+    try {
+      await chrome.tabs.sendMessage(tab.id, { action: 'show-toast', text: 'URL pasted' });
+      clearInterval(tryToast);
+    } catch {
+      if (attempts >= 10) clearInterval(tryToast);
     }
-  };
-  chrome.tabs.onUpdated.addListener(onUpdated);
+  }, 300);
 }
 
 chrome.commands.onCommand.addListener((command) => {
